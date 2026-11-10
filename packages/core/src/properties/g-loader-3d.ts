@@ -11,6 +11,7 @@ export interface IGLoader3D extends IGObject {
 	visible: boolean;
 	touchable: boolean;
 	grayed: boolean;
+	group: string;
 	url: string;
 	fill: number;
 	shrinkOnly: boolean;
@@ -48,6 +49,7 @@ export class GLoader3D extends GObject<IGLoader3D, PropertyType.G_LOADER_3D> {
 			visible: true,
 			touchable: true,
 			grayed: false,
+			group: '',
 			url: '',
 			fill: LoaderFillType.None,
 			shrinkOnly: false,
@@ -215,5 +217,12 @@ export class GLoader3D extends GObject<IGLoader3D, PropertyType.G_LOADER_3D> {
 	}
 	public setClearOnPublish(v: boolean): this {
 		return this.set('clearOnPublish', v);
+	}
+
+	public getGroup(): string {
+		return this.get('group');
+	}
+	public setGroup(v: string): this {
+		return this.set('group', v);
 	}
 }

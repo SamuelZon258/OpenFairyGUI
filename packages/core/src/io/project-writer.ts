@@ -98,6 +98,8 @@ type WritableSkeletonResource = WritableFileResource & {
 	getAtlasNames?(): string[];
 	getAnchorX?(): number;
 	getAnchorY?(): number;
+	getShader?(): string;
+	getPma?(): boolean;
 };
 
 type WritableComponent = Component & {
@@ -879,6 +881,11 @@ export class ProjectWriter {
 					PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.anchor,
 					`${skeletonRes.getAnchorX?.() ?? 0},${skeletonRes.getAnchorY?.() ?? 0}`,
 				);
+				const shader = skeletonRes.getShader?.() ?? '';
+				if (shader)
+					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.shader, shader);
+				if (skeletonRes.getPma?.() === false)
+					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.pma, 'false');
 			}
 
 			if (!resources[tagName]) resources[tagName] = [];

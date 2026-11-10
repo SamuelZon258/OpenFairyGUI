@@ -291,6 +291,8 @@ function liftAssetResource(resource: LiftableAssetResource): UamAssetResource {
 				atlasNames: skeleton.getAtlasNames(),
 				anchorX: skeleton.getAnchorX(),
 				anchorY: skeleton.getAnchorY(),
+				...(skeleton.getShader() ? { shader: skeleton.getShader() } : {}),
+				...(skeleton.getPma() === false ? { pma: false } : {}),
 			},
 		};
 	}
@@ -466,6 +468,7 @@ export function liftDisplayNode(child: GObject): UamDisplayNode {
 			...liftDisplayNodeBase(image),
 			group: image.getGroup(),
 			resource: { packageId: image.getPackageId(), resourceId: image.getSrc() },
+			...(image.getFileName() ? { fileName: image.getFileName() } : {}),
 			color: image.getColor(),
 			flip: image.getFlip(),
 			fillMethod: image.getFillMethod(),
@@ -653,6 +656,7 @@ export function liftDisplayNode(child: GObject): UamDisplayNode {
 			fillClockwise: loader.getFillClockwise(),
 			fillAmount: loader.getFillAmount(),
 			clearOnPublish: loader.getClearOnPublish(),
+			...(loader.getGroup() ? { group: loader.getGroup() } : {}),
 		};
 	}
 	if (child.propertyType === PropertyType.G_LOADER_3D) {
@@ -673,6 +677,7 @@ export function liftDisplayNode(child: GObject): UamDisplayNode {
 			loop: loader.getLoop(),
 			color: loader.getColor(),
 			clearOnPublish: loader.getClearOnPublish(),
+			...(loader.getGroup() ? { group: loader.getGroup() } : {}),
 		};
 	}
 	if (child.propertyType === PropertyType.G_BUTTON) {

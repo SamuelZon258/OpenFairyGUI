@@ -686,8 +686,8 @@ test('writer: uses canonical XML attr names for component root, loader, text nod
 		);
 		t.true(componentXml.includes('animation="idle"'), 'loader3D uses canonical animation attr');
 		t.false(componentXml.includes('animationName='), 'loader3D no longer writes model field name');
-		t.false(/<loader3d\b[^>]*\balign=/.test(componentXml), 'loader3D omits default align attr');
-		t.false(/<loader3d\b[^>]*\bvAlign=/.test(componentXml), 'loader3D omits default vAlign attr');
+		t.false(/<loader3D\b[^>]*\balign=/.test(componentXml), 'loader3D omits default align attr');
+		t.false(/<loader3D\b[^>]*\bvAlign=/.test(componentXml), 'loader3D omits default vAlign attr');
 		t.true(componentXml.includes('prompt="Search here"'), 'text input uses canonical prompt attr');
 		t.true(
 			/<inputtext\b[^>]*text=""[^>]*color="#ff3300"/.test(componentXml),
@@ -1080,6 +1080,48 @@ test('round-trip: tree view list attrs and static item hierarchy survive writeâ†
 			selectedItemIndices: [1],
 			lastSelectedItemIndex: 1,
 		});
+	} finally {
+		await fs.rm(tmpDir, { recursive: true, force: true });
+	}
+});
+
+test('editor display list keeps loader3D tag and loader groups', async (t) => {
+	const doc = new Document();
+	doc.getRoot().setProjectId('editor-display').setProjectType(0).setVersion('3.0');
+	const pkg = doc.createPackage('RankOver').setId('rankover');
+	const comp = doc.createComponent('Main').setId('main').setSize(1080, 1920);
+	comp.addChild(
+		doc
+			.createGLoader3D('fx')
+			.setId('n43')
+			.setUrl('ui://basics/fx')
+			.setAnimationName('ani_shakeResult_fx')
+			.setSkinName('')
+			.setLoop(true)
+			.setXY(-46, 0)
+			.setSize(1173, 109),
+	);
+	comp.addChild(doc.createGGroup('top').setId('n50').setXY(0, 0).setSize(10, 10));
+	comp.addChild(
+		doc.createGLoader('medal').setId('n86').setUrl('ui://rankover/medal').setGroup('n50').setXY(225, 0).setSize(89, 136),
+	);
+	pkg.addResource(comp);
+
+	const io = new NodeIO();
+	const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ofgui-editor-display-'));
+	const outFairy = path.join(tmpDir, 'out.fairy');
+	try {
+		await io.writeProject(doc, outFairy);
+		const xml = await fs.readFile(path.join(tmpDir, 'assets', 'RankOver', 'Main.xml'), 'utf-8');
+		t.true(xml.includes('<loader3D '), 'FairyGUI Editor only accepts the loader3D tag');
+		t.false(xml.includes('<loader3d '), 'lowercase loader3d is an unknown display list item');
+		t.false(/<loader3D\b[^>]*fill="none"/.test(xml), 'default loader3D fill is omitted');
+		t.false(/<loader3D\b[^>]*color="#ffffff"/i.test(xml), 'default loader3D color is omitted');
+		t.regex(xml, /<loader\b[^>]*group="n50"/, 'loaders stay in their editor group');
+
+		const restored = (await io.readProject(outFairy)).getRoot().listPackages()[0]!.listComponents()[0]!;
+		const loader = restored.listChildren().find((child) => child.getId() === 'n86');
+		t.is(loader?.getGroup(), 'n50');
 	} finally {
 		await fs.rm(tmpDir, { recursive: true, force: true });
 	}

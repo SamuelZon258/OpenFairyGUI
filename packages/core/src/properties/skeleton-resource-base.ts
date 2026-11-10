@@ -18,6 +18,8 @@ export interface ISkeletonResourceBase extends IExtensibleProperty {
 	atlasNames: string[];
 	anchorX: number;
 	anchorY: number;
+	shader: string;
+	pma: boolean;
 	sourceData: Ref<FairyBuffer>;
 }
 
@@ -42,6 +44,8 @@ export abstract class SkeletonResourceBase<T extends ISkeletonResourceBase> exte
 			atlasNames: [],
 			anchorX: 0,
 			anchorY: 0,
+			shader: '',
+			pma: true,
 			sourceData: null,
 		}) as Nullable<T>;
 	}
@@ -158,6 +162,22 @@ export abstract class SkeletonResourceBase<T extends ISkeletonResourceBase> exte
 	public setAnchor(x: number, y: number): this {
 		this.setAnchorX(x);
 		return this.setAnchorY(y);
+	}
+
+	/** Editor shader name. Empty means the FairyGUI default for this skeleton. */
+	public getShader(): string {
+		return this.getSkeletonProp('shader');
+	}
+	public setShader(shader: string): this {
+		return this.setSkeletonProp('shader', shader);
+	}
+
+	/** Whether the atlas is already premultiplied. The editor default is true. */
+	public getPma(): boolean {
+		return this.getSkeletonProp('pma');
+	}
+	public setPma(pma: boolean): this {
+		return this.setSkeletonProp('pma', pma);
 	}
 
 	/** Primary source-file bytes for this skeleton resource. */

@@ -547,6 +547,10 @@ function createResourceFromXML(
 				const [anchorX, anchorY] = anchorValue.split(',').map((part) => parseFloat2(part));
 				res.setAnchor(anchorX, anchorY);
 			}
+			const shader = readXmlAttr<string>(attrs, PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.shader);
+			if (shader !== undefined) res.setShader(String(shader));
+			const pma = readXmlAttr<string | boolean>(attrs, PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.pma);
+			if (pma !== undefined) res.setPma(parseBool(pma));
 			pkg.addResource(res);
 			ctx.registerResource(pkg.getId(), id, res);
 			return res;
@@ -581,6 +585,10 @@ function createResourceFromXML(
 				const [anchorX, anchorY] = anchorValue.split(',').map((part) => parseFloat2(part));
 				res.setAnchor(anchorX, anchorY);
 			}
+			const shader = readXmlAttr<string>(attrs, PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.shader);
+			if (shader !== undefined) res.setShader(String(shader));
+			const pma = readXmlAttr<string | boolean>(attrs, PROJECT_XML_PROTOCOL.packageSkeletonResource.attrs.pma);
+			if (pma !== undefined) res.setPma(parseBool(pma));
 			pkg.addResource(res);
 			ctx.registerResource(pkg.getId(), id, res);
 			return res;

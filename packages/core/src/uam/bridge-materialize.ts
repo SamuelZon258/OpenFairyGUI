@@ -457,7 +457,7 @@ function materializeDisplayNodeBase<TNode extends UamDisplayNode, TTarget extend
 		.setFilterData(node.filterData ?? '')
 		.setCustomData(node.customData)
 		.setRelations(materializeRelations(node.relations));
-	if ('group' in node) {
+	if ('group' in node && typeof node.group === 'string') {
 		(target as TTarget & { setGroup(group: string): unknown }).setGroup(node.group);
 	}
 	return target;
@@ -662,7 +662,9 @@ export function materializeAssetResource(doc: Document, resource: UamAssetResour
 			.setHeight(resource.dimensions?.height ?? 0)
 			.setRequireIds(metadataStringArray(resource, 'requireIds'))
 			.setAtlasNames(metadataStringArray(resource, 'atlasNames'))
-			.setAnchor(metadataNumber(resource, 'anchorX', 0), metadataNumber(resource, 'anchorY', 0)),
+			.setAnchor(metadataNumber(resource, 'anchorX', 0), metadataNumber(resource, 'anchorY', 0))
+			.setShader(typeof resource.metadata?.shader === 'string' ? resource.metadata.shader : '')
+			.setPma(metadataBoolean(resource, 'pma', true)),
 		resource,
 	);
 }
@@ -721,7 +723,8 @@ export function materializeDisplayNodeProperties(target: GObject, node: UamDispl
 		const image = materializeDisplayNodeBase(target as ReturnType<Document['createGImage']>, node)
 			.setGroup(imageNode.group)
 			.setSrc(imageNode.resource.resourceId)
-			.setPackageId(imageNode.resource.packageId ?? '');
+			.setPackageId(imageNode.resource.packageId ?? '')
+			.setFileName(imageNode.fileName ?? '');
 		materializeUamImageProperties(image, imageNode);
 		return image;
 	}
@@ -785,14 +788,18 @@ export function materializeDisplayNodeProperties(target: GObject, node: UamDispl
 
 	if (node.kind === 'loader') {
 		const loaderNode = node as UamLoaderNode;
-		const loader = materializeDisplayNodeBase(target as ReturnType<Document['createGLoader']>, node);
+		const loader = materializeDisplayNodeBase(target as ReturnType<Document['createGLoader']>, node).setGroup(
+			loaderNode.group ?? '',
+		);
 		materializeUamLoaderProperties(loader, loaderNode);
 		return loader;
 	}
 
 	if (node.kind === 'loader3D') {
 		const loaderNode = node as UamLoader3DNode;
-		const loader = materializeDisplayNodeBase(target as ReturnType<Document['createGLoader3D']>, node);
+		const loader = materializeDisplayNodeBase(target as ReturnType<Document['createGLoader3D']>, node).setGroup(
+			loaderNode.group ?? '',
+		);
 		materializeUamLoader3DProperties(loader, loaderNode);
 		return loader;
 	}

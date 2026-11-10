@@ -33,7 +33,7 @@ const DISPLAY_TAG: Record<string, string> = {
 	GGraph: 'graph',
 	GGroup: 'group',
 	GLoader: 'loader',
-	GLoader3D: 'loader3d',
+	GLoader3D: 'loader3D',
 	GMovieClip: 'jta',
 	GComponent: 'component',
 	GButton: 'component',
@@ -335,6 +335,7 @@ function serializeChild(obj: GObject): Record<string, unknown> {
 function writeImageXmlAttributes(attrs: Record<string, unknown>, object: GImage): void {
 	const src = object.getSrc();
 	if (src) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.image.attrs.src, src);
+	if (object.getFileName()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.image.attrs.fileName, object.getFileName());
 	if (object.getPackageId()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.image.attrs.pkg, object.getPackageId());
 	const imageColor = object.getColor();
 	if (imageColor && !isDefaultWhiteColor(imageColor))
@@ -452,7 +453,7 @@ function writeLoader3DXmlAttributes(attrs: Record<string, unknown>, object: GLoa
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader3D.attrs.vAlign, vAlignName[vAlign] ?? 'top');
 	}
 	const fill = object.getFill();
-	if (fill !== undefined) {
+	if (fill !== undefined && fill !== 0) {
 		const fillName: Record<number, string> = {
 			0: 'none',
 			1: 'scale',
@@ -474,7 +475,8 @@ function writeLoader3DXmlAttributes(attrs: Record<string, unknown>, object: GLoa
 	if (frame !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader3D.attrs.frame, String(frame));
 	if (object.getLoop() === false) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader3D.attrs.loop, 'false');
 	const loaderColor = object.getColor();
-	if (loaderColor) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader3D.attrs.color, loaderColor);
+	if (loaderColor && !isDefaultWhiteColor(loaderColor))
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader3D.attrs.color, loaderColor);
 	if (object.getClearOnPublish()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader3D.attrs.clearOnPublish, 'true');
 }
 

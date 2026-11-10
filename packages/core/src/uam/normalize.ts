@@ -660,6 +660,7 @@ function normalizeDisplayNode(node: UamDisplayNode): UamDisplayNode {
 				...base,
 				group: node.group ?? '',
 				resource: normalizeResourceRef(node.resource),
+				...(node.fileName ? { fileName: node.fileName } : {}),
 				color: node.color ?? '#FFFFFF',
 				flip: node.flip ?? 0,
 				fillMethod: node.fillMethod ?? 0,
@@ -817,6 +818,7 @@ function normalizeDisplayNode(node: UamDisplayNode): UamDisplayNode {
 				fillClockwise: loader.fillClockwise ?? true,
 				fillAmount: loader.fillAmount ?? 100,
 				clearOnPublish: loader.clearOnPublish ?? false,
+				...(loader.group ? { group: loader.group } : {}),
 			} satisfies UamLoaderNode;
 		}
 		case 'loader3D': {
@@ -837,6 +839,7 @@ function normalizeDisplayNode(node: UamDisplayNode): UamDisplayNode {
 				loop: loader.loop ?? true,
 				color: loader.color ?? '#FFFFFF',
 				clearOnPublish: loader.clearOnPublish ?? false,
+				...(loader.group ? { group: loader.group } : {}),
 			} satisfies UamLoader3DNode;
 		}
 		case 'movieClip': {

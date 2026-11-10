@@ -3307,6 +3307,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"resource": {
 					"$ref": "#/$defs/UamResourceRef_3486136f6c"
 				},
+				"fileName": {
+					"type": "string"
+				},
 				"group": {
 					"type": "string"
 				},
@@ -6465,6 +6468,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"pivot": {
 					"$ref": "#/$defs/UamPoint_600bb96bb9"
 				},
+				"group": {
+					"type": "string"
+				},
 				"id": {
 					"type": "string"
 				},
@@ -6640,6 +6646,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"kind": {
 					"type": "string",
 					"const": "loader3D"
+				},
+				"group": {
+					"type": "string"
 				},
 				"id": {
 					"type": "string"
@@ -14824,6 +14833,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"resource": {
 					"$ref": "#/$defs/UamResourceRef_3486136f6c_wire"
 				},
+				"fileName": {
+					"type": "string"
+				},
 				"group": {
 					"type": "string"
 				},
@@ -17982,6 +17994,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"pivot": {
 					"$ref": "#/$defs/UamPoint_600bb96bb9_wire"
 				},
+				"group": {
+					"type": "string"
+				},
 				"id": {
 					"type": "string"
 				},
@@ -18157,6 +18172,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"kind": {
 					"type": "string",
 					"const": "loader3D"
+				},
+				"group": {
+					"type": "string"
 				},
 				"id": {
 					"type": "string"
@@ -22775,6 +22793,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"resource": {
 					"$ref": "#/$defs/UamResourceRef_3486136f6c_read"
 				},
+				"fileName": {
+					"type": "string"
+				},
 				"group": {
 					"type": "string"
 				},
@@ -25978,6 +25999,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"pivot": {
 					"$ref": "#/$defs/UamPoint_600bb96bb9_read"
 				},
+				"group": {
+					"type": "string"
+				},
 				"id": {
 					"type": "string"
 				},
@@ -26153,6 +26177,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"kind": {
 					"type": "string",
 					"const": "loader3D"
+				},
+				"group": {
+					"type": "string"
 				},
 				"id": {
 					"type": "string"
@@ -33995,5 +34022,5 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 			}
 		}
 	],
-	"digest": "dcfeadbd451f77fa2d2d3bb51911cb1fbe9f6d12cbd6562047d59b441d72e50e"
+	"digest": "7acc31036023b3c4032652a82f719e52233a892c1c037c0b611471845c6318d5"
 };

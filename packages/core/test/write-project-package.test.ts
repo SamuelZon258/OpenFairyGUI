@@ -228,6 +228,8 @@ test('round-trip: misc/spine/dragonbones resources survive package.xml write→r
 	spine.setRequireIds(['misc001', 'img001']);
 	spine.setAtlasNames(['alien-pma']);
 	spine.setAnchor(176, 380);
+	spine.setShader('FairyGUI/Spine');
+	spine.setPma(false);
 	pkg.addResource(spine);
 
 	const dragonMisc = doc.createMiscResource('dragon-tex');
@@ -268,6 +270,9 @@ test('round-trip: misc/spine/dragonbones resources survive package.xml write→r
 		t.true(pkgXml.includes('require="misc001,img001"'), 'spine writes require ids');
 		t.true(pkgXml.includes('atlasNames="alien-pma"'), 'spine writes atlasNames');
 		t.true(pkgXml.includes('anchor="176,380"'), 'spine writes anchor');
+		t.true(pkgXml.includes('shader="FairyGUI/Spine"'), 'spine writes the chosen shader');
+		t.true(pkgXml.includes('pma="false"'), 'spine keeps a non-default premultiply flag');
+		t.false(pkgXml.includes('shader="FairyGUI/Image"'), 'spine does not fall back to the image shader');
 		t.true(
 			pkgXml.includes(
 				'<dragonbones id="dragon001" name="dragon_ske.json" path="/images/" width="0" height="0" require="misc002,img002" atlasNames="" anchor="0,0"',
@@ -291,6 +296,8 @@ test('round-trip: misc/spine/dragonbones resources survive package.xml write→r
 		t.deepEqual(spine2.getAtlasNames?.(), ['alien-pma']);
 		t.is(spine2.getAnchorX?.(), 176);
 		t.is(spine2.getAnchorY?.(), 380);
+		t.is(spine2.getShader?.(), 'FairyGUI/Spine');
+		t.is(spine2.getPma?.(), false);
 
 		const dragon2 = pkg2!.listResources().find((res) => res.getId?.() === 'dragon001') as any;
 		t.truthy(dragon2, 'dragonbones resource exists after round-trip');

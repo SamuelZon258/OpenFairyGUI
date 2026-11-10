@@ -383,6 +383,8 @@ export interface UamImageProperties {
 export interface UamImageNode extends UamGroupableDisplayNodeBase, UamImageProperties {
 	kind: 'image';
 	resource: UamResourceRef;
+	/** Editor display hint. Empty means the package resource id is enough. */
+	fileName?: string;
 }
 
 export interface UamTextProperties {
@@ -561,6 +563,8 @@ export interface UamLoaderProperties {
 export interface UamLoaderNode extends UamDisplayNodeBase, UamLoaderProperties {
 	kind: 'loader';
 	pivot: UamPoint;
+	/** Parent group id. Omitted when the loader is not in a group. */
+	group?: string;
 }
 
 export interface UamLoader3DProperties {
@@ -581,6 +585,8 @@ export interface UamLoader3DProperties {
 
 export interface UamLoader3DNode extends UamDisplayNodeBase, UamLoader3DProperties {
 	kind: 'loader3D';
+	/** Parent group id. Omitted when the loader is not in a group. */
+	group?: string;
 }
 
 export interface UamMovieClipProperties {
