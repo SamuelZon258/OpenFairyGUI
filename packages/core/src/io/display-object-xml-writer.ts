@@ -373,9 +373,9 @@ function writeGraphXmlAttributes(attrs: Record<string, unknown>, object: GGraph)
 	if (graphType !== 0) {
 		const graphTypeName: Record<number, string> = {
 			1: 'rect',
-			2: 'ellipse',
+			2: 'eclipse',
 			3: 'polygon',
-			4: 'regularpolygon',
+			4: 'regular_polygon',
 		};
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.type, graphTypeName[graphType] ?? 'rect');
 	}

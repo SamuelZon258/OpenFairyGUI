@@ -177,6 +177,10 @@ test('round-trip: loader fill and graph geometry attrs survive write→read', as
 	graphPoints.setGraphType(3);
 	graphPoints.setPoints([0, 0, 20, 0, 20, 10]);
 
+	const graphEllipse = doc.createGGraph('ellipse');
+	graphEllipse.setId('n4');
+	graphEllipse.setGraphType(2);
+
 	const loader = doc.createGLoader('loader');
 	loader.setId('n3');
 	loader.setUrl('ui://pkg002/demo');
@@ -196,6 +200,7 @@ test('round-trip: loader fill and graph geometry attrs survive write→read', as
 	comp.addChild(graphRect);
 	comp.addChild(graphPolygon);
 	comp.addChild(graphPoints);
+	comp.addChild(graphEllipse);
 	comp.addChild(loader);
 	pkg.addResource(comp);
 
@@ -205,6 +210,9 @@ test('round-trip: loader fill and graph geometry attrs survive write→read', as
 
 	try {
 		await io.writeProject(doc, outFairy);
+		const shapeXml = await fs.readFile(path.join(tmpDir, 'assets', 'Demo2', 'Shapes.xml'), 'utf-8');
+		t.true(shapeXml.includes('type="eclipse"'), 'ellipse graph uses the editor type token');
+		t.true(shapeXml.includes('type="regular_polygon"'), 'regular polygon uses the editor type token');
 
 		const doc2 = await io.readProject(outFairy);
 		const comp2 = doc2
@@ -227,12 +235,19 @@ test('round-trip: loader fill and graph geometry attrs survive write→read', as
 		t.is(polygon2.getSides(), 5);
 		t.is(polygon2.getStartAngle(), 12.5);
 		t.deepEqual(polygon2.getDistances(), [1, 0.8, 0.6]);
+		t.is(polygon2.getGraphType(), 4);
 
 		const points2 = comp2!.listChildren().find((child) => child.getId() === 'n2') as ReturnType<
 			Document['createGGraph']
 		>;
 		t.truthy(points2, 'points graph exists');
 		t.deepEqual(points2.getPoints(), [0, 0, 20, 0, 20, 10]);
+
+		const ellipse2 = comp2!.listChildren().find((child) => child.getId() === 'n4') as ReturnType<
+			Document['createGGraph']
+		>;
+		t.truthy(ellipse2, 'ellipse graph exists');
+		t.is(ellipse2.getGraphType(), 2);
 
 		const loader2 = comp2!.listChildren().find((child) => child.getId() === 'n3') as ReturnType<
 			Document['createGLoader']

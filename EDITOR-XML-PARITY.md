@@ -16,7 +16,7 @@ IL2CPP 反编译拿不到完整 C# 方法体。这次用 Il2CppDumper 拿到类�
 - 输入文本：`keyboardType` 在 `password` 前。
 - 加载器：`useResize` 在 `autoSize` 前，`playing` / `frame` 在 `color` 前。
 - 动画：`frame` 在 `playing` 前。
-- 图形：`corner` → `sides` → `startAngle` → `points` → `distances`。`distances` 编辑器这次没在 `FGraph.Write` 里出现，先留在 `points` 后面。
+- 图形：`corner` → `sides` → `startAngle` → `points` → `distances`。`distances` 编辑器这次没在 `FGraph.Write` 里出现，先留在 `points` 后面。`type` 写成编辑器的 `eclipse` 和 `regular_polygon`。
 - 组件根节点属性按 `FComponent.Write_editMode`：`size` → `idnum` → `restrictSize` → `pivot` → `anchor` → `overflow` → `opaque` → 滚动相关 → `margin` → `clipSoftness` → `extention` → `customExtention` → `mask` → `hitTest` → `initName` → 设计图 → 背景色 → `remark` → `customData` → `pageController` → 声音。
 - 组件子节点：控制器 → `displayList` → 扩展元素（`Button` 等）→ `relation` → `transition` → `customProperty`。
 - 控制器：`exported` 等可选属性在 `pages` / `selected` 之前。
