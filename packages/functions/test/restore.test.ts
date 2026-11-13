@@ -509,8 +509,8 @@ test('restore published project: directory batch restores packages, assets, and 
 			'restored Basics/Demo_Text lowercases text color attrs',
 		);
 		t.true(
-			/<inputtext\b[^>]*id="n22"[^>]*text=""/.test(basicsDemoTextXml),
-			'restored Basics/Demo_Text keeps explicit empty input text',
+			/<text\b[^>]*id="n22"[^>]*text=""[^>]*input="true"/.test(basicsDemoTextXml),
+			'restored Basics/Demo_Text keeps input fields as text input="true"',
 		);
 		t.true(
 			/<text\b[^>]*id="n24"[^>]*text=""/.test(basicsDemoTextXml),
@@ -658,7 +658,7 @@ test('restore published project: directory batch restores packages, assets, and 
 			'restored Transition/PowerUp omits default white jta color',
 		);
 		t.true(
-			powerUpXml.includes('<item time="0" type="Alpha" value="1.00"/>'),
+			powerUpXml.includes('<item time="0" type="Alpha" value="1"/>'),
 			'restored Transition/PowerUp keeps non-tween alpha as value attr',
 		);
 		t.true(

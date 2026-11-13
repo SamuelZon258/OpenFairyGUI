@@ -334,7 +334,7 @@ test('round-trip: text shadow attrs survive write→read', async (t) => {
 			'richtext writes canonical underlaySoftness attr',
 		);
 		t.true(
-			/<inputtext\b[^>]*demoText="input preview"/.test(componentXml),
+			/<text\b(?=[^>]*\binput="true")(?=[^>]*demoText="input preview")/.test(componentXml),
 			'input text writes canonical plain-text attrs',
 		);
 
@@ -690,15 +690,15 @@ test('writer: uses canonical XML attr names for component root, loader, text nod
 		t.false(/<loader3D\b[^>]*\bvAlign=/.test(componentXml), 'loader3D omits default vAlign attr');
 		t.true(componentXml.includes('prompt="Search here"'), 'text input uses canonical prompt attr');
 		t.true(
-			/<inputtext\b[^>]*text=""[^>]*color="#ff3300"/.test(componentXml),
+			/<text\b(?=[^>]*\binput="true")(?=[^>]*text="")(?=[^>]*color="#ff3300")/.test(componentXml),
 			'text input preserves explicit empty text and lowercases color attrs',
 		);
 		t.true(
-			/<inputtext\b[^>]*autoClearText(?:="true")?/.test(componentXml),
+			/<text\b(?=[^>]*\binput="true")(?=[^>]*autoClearText(?:="true")?)/.test(componentXml),
 			'text input writes canonical autoClearText attr',
 		);
 		t.true(
-			/<inputtext\b(?=[^>]*rotation="15")(?=[^>]*alpha="0.65")(?=[^>]*touchable="false")(?=[^>]*grayed="true")/.test(
+			/<text\b(?=[^>]*\binput="true")(?=[^>]*rotation="15")(?=[^>]*alpha="0.65")(?=[^>]*touchable="false")(?=[^>]*grayed="true")/.test(
 				componentXml,
 			),
 			'text input writes canonical common display attrs',

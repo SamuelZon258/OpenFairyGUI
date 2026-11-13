@@ -402,7 +402,7 @@
 | `underline` |  | 下划线 |
 | `italic` |  | 斜体 |
 | `bold` |  | 粗体 |
-| `strikethrough` |  | 删除线 |
+| `strike` | `strikethrough` | 删除线 |
 | `strokeColor` |  | 描边颜色 |
 | `strokeSize` |  | 描边宽度 |
 | `shadowColor` |  | 阴影颜色 |
@@ -450,7 +450,7 @@
 | `underline` |  | 下划线 |
 | `italic` |  | 斜体 |
 | `bold` |  | 粗体 |
-| `strikethrough` |  | 删除线 |
+| `strike` | `strikethrough` | 删除线 |
 | `strokeColor` |  | 描边颜色 |
 | `strokeSize` |  | 描边宽度 |
 | `shadowColor` |  | 阴影颜色 |
@@ -496,7 +496,7 @@
 | `underline` |  | 下划线 |
 | `italic` |  | 斜体 |
 | `bold` |  | 粗体 |
-| `strikethrough` |  | 删除线 |
+| `strike` | `strikethrough` | 删除线 |
 | `strokeColor` |  | 描边颜色 |
 | `strokeSize` |  | 描边宽度 |
 | `shadowColor` |  | 阴影颜色 |

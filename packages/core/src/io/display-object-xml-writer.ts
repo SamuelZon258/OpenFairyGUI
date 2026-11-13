@@ -29,7 +29,7 @@ const DISPLAY_TAG: Record<string, string> = {
 	GImage: 'image',
 	GTextField: 'text',
 	GRichTextField: 'richtext',
-	GTextInput: 'inputtext',
+	GTextInput: 'text',
 	GGraph: 'graph',
 	GGroup: 'group',
 	GLoader: 'loader',
@@ -170,6 +170,12 @@ function writeCommonDisplayState(
 			formatProjectInt32List([object.getX?.() ?? 0, object.getY?.() ?? 0], 'display object xy'),
 		);
 	}
+	const pivotX = object.getPivotX() ?? 0;
+	const pivotY = object.getPivotY() ?? 0;
+	if (specs.pivot && (pivotX !== 0 || pivotY !== 0 || object.getPivotAsAnchor())) {
+		writeXmlAttr(target, specs.pivot, `${pivotX},${pivotY}`);
+		if (specs.anchor && object.getPivotAsAnchor()) writeXmlAttr(target, specs.anchor, 'true');
+	}
 	const width = object.getWidth?.() ?? 0;
 	const height = object.getHeight?.() ?? 0;
 	if (specs.size && (width !== 0 || height !== 0)) {
@@ -185,13 +191,8 @@ function writeCommonDisplayState(
 	if (specs.restrictSize && restrictSize.some((value) => value !== 0)) {
 		writeXmlAttr(target, specs.restrictSize, formatProjectInt32List(restrictSize, 'display object restrictSize'));
 	}
+	if (specs.group && object.getGroup?.()) writeXmlAttr(target, specs.group, object.getGroup?.());
 	if (specs.aspect && object.getAspect()) writeXmlAttr(target, specs.aspect, 'true');
-	const pivotX = object.getPivotX() ?? 0;
-	const pivotY = object.getPivotY() ?? 0;
-	if (specs.pivot && (pivotX !== 0 || pivotY !== 0 || object.getPivotAsAnchor())) {
-		writeXmlAttr(target, specs.pivot, `${pivotX},${pivotY}`);
-		if (specs.anchor && object.getPivotAsAnchor()) writeXmlAttr(target, specs.anchor, 'true');
-	}
 	const scaleX = object.getScaleX() ?? 1;
 	const scaleY = object.getScaleY() ?? 1;
 	if (specs.scale && (scaleX !== 1 || scaleY !== 1)) {
@@ -202,15 +203,14 @@ function writeCommonDisplayState(
 	if (specs.skew && (skewX !== 0 || skewY !== 0)) {
 		writeXmlAttr(target, specs.skew, `${skewX},${skewY}`);
 	}
-	if (specs.group && object.getGroup?.()) writeXmlAttr(target, specs.group, object.getGroup?.());
+	if (specs.visible && object.getVisible?.() === false) {
+		writeXmlAttr(target, specs.visible, 'false');
+	}
 	if (specs.alpha && (object.getAlpha?.() ?? 1) !== 1) {
 		writeXmlAttr(target, specs.alpha, formatDisplayAlpha(object.getAlpha?.() ?? 1));
 	}
 	if (specs.rotation && (object.getRotation?.() ?? 0) !== 0) {
 		writeXmlAttr(target, specs.rotation, String(object.getRotation?.() ?? 0));
-	}
-	if (specs.visible && object.getVisible?.() === false) {
-		writeXmlAttr(target, specs.visible, 'false');
 	}
 	if (specs.touchable && object.getTouchable?.() === false) {
 		writeXmlAttr(target, specs.touchable, 'false');
@@ -218,12 +218,12 @@ function writeCommonDisplayState(
 	if (specs.grayed && object.getGrayed?.()) {
 		writeXmlAttr(target, specs.grayed, 'true');
 	}
-	if (specs.tooltips && object.getTooltips()) writeXmlAttr(target, specs.tooltips, object.getTooltips());
-	if (specs.customData && object.getCustomData()) writeXmlAttr(target, specs.customData, object.getCustomData());
 	const blendMode = object.getBlendMode() ?? 'normal';
 	if (specs.blendMode && blendMode !== 'normal') writeXmlAttr(target, specs.blendMode, blendMode);
 	if (specs.filter && object.getFilter()) writeXmlAttr(target, specs.filter, object.getFilter());
 	if (specs.filterData && object.getFilterData()) writeXmlAttr(target, specs.filterData, object.getFilterData());
+	if (specs.tooltips && object.getTooltips()) writeXmlAttr(target, specs.tooltips, object.getTooltips());
+	if (specs.customData && object.getCustomData()) writeXmlAttr(target, specs.customData, object.getCustomData());
 }
 
 function formatFillMethod(fillMethod: number): string {
@@ -240,6 +240,7 @@ function formatFillMethod(fillMethod: number): string {
 
 function getDisplayListVariantName(propertyType: string, tagName: string): string {
 	if (propertyType === 'GLoader3D') return 'loader3D';
+	if (propertyType === 'GTextInput') return 'inputtext';
 	if (propertyType === 'GTree') return 'tree';
 	return tagName;
 }
@@ -271,14 +272,31 @@ export function serializeDisplayList(children: GObject[]): string {
 	return `\n${lines.join('\n')}\n  `;
 }
 
-function serializeChild(obj: GObject): Record<string, unknown> {
-	const attrs: Record<string, unknown> = {};
-	if (obj.getId()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.sharedDisplayAttributes.attrs.id, obj.getId());
-	if (obj.getName()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.sharedDisplayAttributes.attrs.name, obj.getName());
-
-	// Type-specific attributes
+function writeResourceIdentity(attrs: Record<string, unknown>, obj: GObject): void {
 	const type = obj.propertyType as string;
-	if (EXTENSION_TYPE[type]) {
+	if (type === 'GImage') {
+		const image = obj as GImage;
+		if (image.getSrc()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.image.attrs.src, image.getSrc());
+		if (image.getFileName()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.image.attrs.fileName, image.getFileName());
+		if (image.getPackageId()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.image.attrs.pkg, image.getPackageId());
+		return;
+	}
+	if (type === 'GMovieClip') {
+		const clip = obj as GMovieClip;
+		if (clip.getSrc()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.src, clip.getSrc());
+		if (clip.getFileName()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.fileName, clip.getFileName());
+		if (clip.getPackageId()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.pkg, clip.getPackageId());
+		return;
+	}
+	if (
+		type === 'GComponent' ||
+		type === 'GButton' ||
+		type === 'GLabel' ||
+		type === 'GComboBox' ||
+		type === 'GProgressBar' ||
+		type === 'GSlider' ||
+		type === 'GScrollBar'
+	) {
 		const instance = obj as GComponent;
 		if (instance.getSrc()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.componentInstance.attrs.src, instance.getSrc());
 		if (instance.getFileName())
@@ -286,32 +304,31 @@ function serializeChild(obj: GObject): Record<string, unknown> {
 		if (instance.getPackageId())
 			writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.componentInstance.attrs.pkg, instance.getPackageId());
 	}
-	if (type === 'GImage') {
-		writeImageXmlAttributes(attrs, obj as GImage);
-	}
-	if (type === 'GGraph') {
-		writeGraphXmlAttributes(attrs, obj as GGraph);
-	}
-	if (type === 'GLoader') {
-		writeLoaderXmlAttributes(attrs, obj as GLoader);
-	}
-	if (type === 'GMovieClip') {
-		writeMovieClipXmlAttributes(attrs, obj as GMovieClip);
-	}
+}
+
+function serializeChild(obj: GObject): Record<string, unknown> {
+	const attrs: Record<string, unknown> = {};
+	if (obj.getId()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.sharedDisplayAttributes.attrs.id, obj.getId());
+	if (obj.getName()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.sharedDisplayAttributes.attrs.name, obj.getName());
+
+	const type = obj.propertyType as string;
+	// Editor FObject.Write writes id/name/src/fileName/pkg, then geometry, then the subclass adds its own attrs.
+	writeResourceIdentity(attrs, obj);
+
+	const objectProtocol = DISPLAY_OBJECT_PROTOCOL_BY_TYPE[type] ?? PROJECT_XML_PROTOCOL.componentInstance;
+	writeCommonDisplayState(attrs, obj, objectProtocol);
+
+	if (type === 'GImage') writeImageXmlAttributes(attrs, obj as GImage);
+	if (type === 'GGraph') writeGraphXmlAttributes(attrs, obj as GGraph);
+	if (type === 'GLoader') writeLoaderXmlAttributes(attrs, obj as GLoader);
+	if (type === 'GMovieClip') writeMovieClipXmlAttributes(attrs, obj as GMovieClip);
 	if (type === 'GTextField' || type === 'GRichTextField' || type === 'GTextInput') {
 		writeTextXmlAttributes(attrs, obj as GTextField);
 		if (type === 'GTextInput') writeTextInputXmlAttributes(attrs, obj as GTextInput);
 	}
-	if (type === 'GLoader3D') {
-		writeLoader3DXmlAttributes(attrs, obj as GLoader3D);
-	}
-
-	if (type === 'GGroup') {
-		writeGroupXmlAttributes(attrs, obj as GGroup);
-	}
-	if (type === 'GList' || type === 'GTree') {
-		writeListXmlNode(attrs, obj as GList | GTree);
-	}
+	if (type === 'GLoader3D') writeLoader3DXmlAttributes(attrs, obj as GLoader3D);
+	if (type === 'GGroup') writeGroupXmlAttributes(attrs, obj as GGroup);
+	if (type === 'GList' || type === 'GTree') writeListXmlNode(attrs, obj as GList | GTree);
 
 	const extension = ['GComponent', 'GButton', 'GLabel'].includes(type)
 		? writeComponentInstanceXmlNode(attrs, obj as GComponent)
@@ -322,13 +339,8 @@ function serializeChild(obj: GObject): Record<string, unknown> {
 			writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.componentInstance.attrs.pageController, pageController);
 	}
 
-	const objectProtocol = DISPLAY_OBJECT_PROTOCOL_BY_TYPE[type] ?? PROJECT_XML_PROTOCOL.componentInstance;
-	writeCommonDisplayState(attrs, obj, objectProtocol);
 	writeDisplayObjectBehaviors(attrs, obj, objectProtocol);
-	if (extension) {
-		attrs[extension.name] = extension.value;
-	}
-
+	if (extension) attrs[extension.name] = extension.value;
 	return attrs;
 }
 
@@ -379,12 +391,12 @@ function writeGraphXmlAttributes(attrs: Record<string, unknown>, object: GGraph)
 	}
 	const cornerRadius = object.getCornerRadius();
 	if (cornerRadius) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.corner, cornerRadius.join(','));
-	const points = object.getPoints();
-	if (points?.length) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.points, points.join(','));
 	const sides = object.getSides() ?? 0;
 	if (sides > 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.sides, String(sides));
 	const startAngle = object.getStartAngle() ?? 0;
 	if (startAngle !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.startAngle, String(startAngle));
+	const points = object.getPoints();
+	if (points?.length) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.points, points.join(','));
 	const distances = object.getDistances();
 	if (distances?.length) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.graph.attrs.distances, distances.join(','));
 }
@@ -415,15 +427,15 @@ function writeLoaderXmlAttributes(attrs: Record<string, unknown>, object: GLoade
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.fill, fillName[fill] ?? 'none');
 	}
 	if (object.getShrinkOnly()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.shrinkOnly, '1');
-	if (object.getAutoSize()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.autoSize, '1');
 	if (object.getUseResize()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.useResize, '1');
+	if (object.getAutoSize()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.autoSize, '1');
 	if (object.getShowErrorSign()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.errorSign, 'true');
-	const loaderColor = object.getColor();
-	if (loaderColor && !isDefaultWhiteColor(loaderColor))
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.color, loaderColor);
 	if (object.getPlaying() === false) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.playing, 'false');
 	const frame = object.getFrame() ?? 0;
 	if (frame !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.frame, String(frame));
+	const loaderColor = object.getColor();
+	if (loaderColor && !isDefaultWhiteColor(loaderColor))
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.color, loaderColor);
 	const fillMethod = object.getFillMethod() ?? 0;
 	if (fillMethod !== 0) {
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.loader.attrs.fillMethod, formatFillMethod(fillMethod));
@@ -481,6 +493,7 @@ function writeLoader3DXmlAttributes(attrs: Record<string, unknown>, object: GLoa
 }
 
 function writeGroupXmlAttributes(attrs: Record<string, unknown>, object: GGroup): void {
+	if (object.getAdvanced()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.group.attrs.advanced, 'true');
 	const layout = object.getLayout();
 	if (layout !== undefined && layout !== 0) {
 		const layoutName: Record<number, string> = { 0: 'none', 1: 'hz', 2: 'vt' };
@@ -490,7 +503,6 @@ function writeGroupXmlAttributes(attrs: Record<string, unknown>, object: GGroup)
 	if (lineGap !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.group.attrs.lineGap, String(lineGap));
 	const columnGap = object.getColumnGap() ?? 0;
 	if (columnGap !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.group.attrs.columnGap, String(columnGap));
-	if (object.getAdvanced()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.group.attrs.advanced, 'true');
 	if (object.getExcludeInvisibles()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.group.attrs.excludeInvisibles, 'true');
 	if (object.getAutoSizeDisabled()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.group.attrs.autoSizeDisabled, 'true');
 	const mainGridIndex = object.getMainGridIndex() ?? -1;
@@ -502,9 +514,9 @@ function writeMovieClipXmlAttributes(attrs: Record<string, unknown>, object: GMo
 	if (src) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.src, src);
 	if (object.getFileName()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.fileName, object.getFileName());
 	if (object.getPackageId()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.pkg, object.getPackageId());
-	if (object.getPlaying() === false) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.playing, 'false');
 	const frame = object.getFrame() ?? 0;
 	if (frame !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.frame, String(frame));
+	if (object.getPlaying() === false) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.playing, 'false');
 	const movieClipColor = object.getColor();
 	if (movieClipColor && !isDefaultWhiteColor(movieClipColor)) {
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.movieClip.attrs.color, formatXmlColor(movieClipColor));

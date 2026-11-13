@@ -909,6 +909,7 @@ function liftComponentResource(resource: ReturnType<Document['createComponent']>
 			displayList: resource.listChildren().map((child) => liftDisplayNode(child)),
 			controllers: liftControllers(resource),
 			transitions: liftTransitions(resource),
+			relations: liftRelations(resource.getRelations()),
 		},
 	};
 }

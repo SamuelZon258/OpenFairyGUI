@@ -230,6 +230,7 @@ function createEngineeringScaleUamProject(): UamProject {
 									],
 								},
 							],
+							relations: [],
 						},
 					},
 				],
@@ -1312,4 +1313,36 @@ test('UAM project lift and materialize preserve list, tree, graph, group, loader
 		t.is(inputNode.promptText, 'prompt');
 		t.true(inputNode.password);
 	}
+});
+
+test('UAM lift and materialize preserve component relations to child nodes', (t) => {
+	const doc = new Document();
+	const pkg = doc.createPackage('ComponentRelations').setId('pkg-component-relations');
+	const component = doc
+		.createComponent('Host')
+		.setId('host-component')
+		.setPath('/')
+		.setExported(true)
+		.setSize(100, 20);
+	component.addChild(doc.createGLoader('icon').setId('n3_hin6').setSize(100, 20));
+	component.setRelations([
+		{ target: 'n3_hin6', type: RelationType.Width, usePercent: false },
+		{ target: 'n3_hin6', type: RelationType.Height, usePercent: false },
+	]);
+	pkg.addResource(component);
+
+	const lifted = liftDocumentToUamProject(doc);
+	const host = lifted.packages[0]?.resources.find((resource) => resource.id === 'host-component');
+	t.is(host?.kind, 'component');
+	if (host?.kind !== 'component') return;
+	t.deepEqual(host.component.relations, [
+		{ targetNodeId: 'n3_hin6', type: RelationType.Width, usePercent: false },
+		{ targetNodeId: 'n3_hin6', type: RelationType.Height, usePercent: false },
+	]);
+
+	const rematerialized = liftDocumentToUamProject(materializeUamProject(lifted));
+	const again = rematerialized.packages[0]?.resources.find((resource) => resource.id === 'host-component');
+	t.is(again?.kind, 'component');
+	if (again?.kind !== 'component') return;
+	t.deepEqual(again.component.relations, host.component.relations);
 });

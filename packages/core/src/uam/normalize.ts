@@ -1052,6 +1052,7 @@ function normalizeComponentModel(component: UamComponentModel): UamComponentMode
 		displayList: (component.displayList ?? []).map(normalizeDisplayNode),
 		controllers: (component.controllers ?? []).map(normalizeControllerModel),
 		transitions: (component.transitions ?? []).map(normalizeTransitionModel),
+		relations: normalizeRelations(component.relations),
 	};
 }
 

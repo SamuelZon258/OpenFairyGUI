@@ -107,6 +107,7 @@ export function createSupportedProject(): UamProject {
 							],
 							controllers: [],
 							transitions: [],
+							relations: [],
 						},
 					},
 				],
@@ -404,6 +405,7 @@ export function createLifecycleComponent(id = 'cmp002', name = 'Popup'): UamComp
 			],
 			controllers: [],
 			transitions: [],
+			relations: [],
 		},
 	};
 }

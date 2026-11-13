@@ -562,6 +562,7 @@ function createLifecycleComponent(id = 'cmp002', name = 'Popup'): UamComponentRe
 			],
 			controllers: [],
 			transitions: [],
+			relations: [],
 		},
 	};
 }

@@ -27,7 +27,7 @@
 |---|---|---|---|---|
 | 图片 | `image` | `image` | `image` | `image` |
 | 普通文本 | `text` | `text` | `text` | `text` |
-| 输入文本 | `text` 且 `input="true"`，或显式 `inputtext` | `inputtext` | `inputtext` | `inputtext` |
+| 输入文本 | `text` 且 `input="true"`，或显式 `inputtext` | `inputtext` | `inputtext` | `text` 且 `input="true"` |
 | 富文本 | `richtext` | `richtext` | `richtext` | `richtext` |
 | 图形 | `graph` | `graph` | `graph` | `graph` |
 | 分组 | `group` | `group` | `group` | `group` |
@@ -54,7 +54,7 @@
 | 场景 | 写回结果 |
 |---|---|
 | `GTextField` | `text` |
-| `GTextInput` | `inputtext` |
+| `GTextInput` | `text`，同时写 `input="true"`；读入仍接受显式 `inputtext` |
 | `GRichTextField` | `richtext` |
 | `GTree` | `list`，同时写 `treeView="true"` |
 | `GLoader3D` | `loader3d` |

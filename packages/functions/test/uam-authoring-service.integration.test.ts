@@ -120,6 +120,7 @@ function createSupportedProject(): UamProject {
 							],
 							controllers: [],
 							transitions: [],
+							relations: [],
 						},
 					},
 				],

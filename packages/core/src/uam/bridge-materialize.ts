@@ -1169,6 +1169,7 @@ function materializeComponentResource(
 	}
 	composeControllers(doc, component, resource.component.controllers);
 	composeTransitions(doc, component, resource.component.transitions);
+	component.setRelations(materializeRelations(resource.component.relations));
 	for (const node of resource.component.displayList) {
 		const target = component.getChildById(node.id);
 		if (target) {

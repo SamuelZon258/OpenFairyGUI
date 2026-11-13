@@ -2932,6 +2932,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				},
 				"transitions": {
 					"$ref": "#/$defs/Array_40451c0a9c"
+				},
+				"relations": {
+					"$ref": "#/$defs/Array_9d4803aa29"
 				}
 			},
 			"required": [
@@ -2940,7 +2943,8 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"customData",
 				"displayList",
 				"controllers",
-				"transitions"
+				"transitions",
+				"relations"
 			],
 			"additionalProperties": false
 		},
@@ -20088,6 +20092,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				},
 				"transitions": {
 					"$ref": "#/$defs/Array_40451c0a9c_wire"
+				},
+				"relations": {
+					"$ref": "#/$defs/Array_9d4803aa29_wire"
 				}
 			},
 			"required": [
@@ -20096,7 +20103,8 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"customData",
 				"displayList",
 				"controllers",
-				"transitions"
+				"transitions",
+				"relations"
 			],
 			"additionalProperties": false
 		},
@@ -22418,6 +22426,9 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				},
 				"transitions": {
 					"$ref": "#/$defs/Array_40451c0a9c_read"
+				},
+				"relations": {
+					"$ref": "#/$defs/Array_9d4803aa29_read"
 				}
 			},
 			"required": [
@@ -22426,7 +22437,8 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 				"customData",
 				"displayList",
 				"controllers",
-				"transitions"
+				"transitions",
+				"relations"
 			],
 			"additionalProperties": true
 		},
@@ -34022,5 +34034,5 @@ export const CONTRACT_SNAPSHOT: ContractSnapshot = {
 			}
 		}
 	],
-	"digest": "7acc31036023b3c4032652a82f719e52233a892c1c037c0b611471845c6318d5"
+	"digest": "2748674de762ba7f5535035b5a7abb607322d68922ee1dce9d6a636ba9fc231c"
 };

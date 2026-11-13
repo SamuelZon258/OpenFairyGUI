@@ -287,13 +287,13 @@ export class ProjectWriter {
 		writeXmlAttr(publishAttrs, PROJECT_XML_PROTOCOL.packagePublish.attrs.path, publishPath || undefined);
 		writeXmlAttr(
 			publishAttrs,
-			PROJECT_XML_PROTOCOL.packagePublish.attrs.branchPath,
-			publishBranchPath || undefined,
+			PROJECT_XML_PROTOCOL.packagePublish.attrs.packageCount,
+			publishPackageCount > 0 ? publishPackageCount : undefined,
 		);
 		writeXmlAttr(
 			publishAttrs,
-			PROJECT_XML_PROTOCOL.packagePublish.attrs.packageCount,
-			publishPackageCount > 0 ? publishPackageCount : undefined,
+			PROJECT_XML_PROTOCOL.packagePublish.attrs.branchPath,
+			publishBranchPath || undefined,
 		);
 		writeXmlAttr(publishAttrs, PROJECT_XML_PROTOCOL.packagePublish.attrs.genCode, genCode ? 'true' : undefined);
 		writeXmlAttr(publishAttrs, PROJECT_XML_PROTOCOL.packagePublish.attrs.codePath, codePath || undefined);
@@ -347,12 +347,12 @@ export class ProjectWriter {
 			.map((atlas) => {
 				const attrs: Record<string, unknown> = {};
 				writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packagePublishAtlas.attrs.name, atlas.name || undefined);
-				writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packagePublishAtlas.attrs.index, String(atlas.index));
 				writeXmlAttr(
 					attrs,
 					PROJECT_XML_PROTOCOL.packagePublishAtlas.attrs.compression,
 					atlas.compression ? 'true' : undefined,
 				);
+				writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packagePublishAtlas.attrs.index, String(atlas.index));
 				return attrs;
 			});
 		if (publishAtlases.length > 0) {
@@ -785,9 +785,6 @@ export class ProjectWriter {
 			// Image-specific
 			if (res.propertyType === 'ImageResource') {
 				const imgRes = res as WritableImageResource;
-				const textureSetMode = imgRes.getTextureSetMode?.() ?? '';
-				if (textureSetMode)
-					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.atlas, textureSetMode);
 				const scaleOpt = imgRes.getScaleOption?.() ?? 0;
 				if (scaleOpt === 1) {
 					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.scale, '9grid');
@@ -800,14 +797,6 @@ export class ProjectWriter {
 						);
 				} else if (scaleOpt === 2) {
 					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.scale, 'tile');
-				}
-				if (imageWriteHints.get(res)?.omitPackageSize !== true) {
-					const width = imgRes.getWidth?.() ?? 0;
-					if (width !== 0)
-						writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.width, String(width));
-					const height = imgRes.getHeight?.() ?? 0;
-					if (height !== 0)
-						writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.height, String(height));
 				}
 				const gridTile = imgRes.getTileGridIndice?.() ?? 0;
 				if (gridTile !== 0)
@@ -822,10 +811,21 @@ export class ProjectWriter {
 						String(imgRes.getQuality?.() ?? 80),
 					);
 				}
-				if (imgRes.getDuplicatePadding?.())
-					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.duplicatePadding, 'true');
 				if (imgRes.getSmoothing?.() === false)
 					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.smoothing, 'false');
+				const textureSetMode = imgRes.getTextureSetMode?.() ?? '';
+				if (textureSetMode)
+					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.atlas, textureSetMode);
+				if (imgRes.getDuplicatePadding?.())
+					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.duplicatePadding, 'true');
+				if (imageWriteHints.get(res)?.omitPackageSize !== true) {
+					const width = imgRes.getWidth?.() ?? 0;
+					if (width !== 0)
+						writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.width, String(width));
+					const height = imgRes.getHeight?.() ?? 0;
+					if (height !== 0)
+						writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageImageResource.attrs.height, String(height));
+				}
 			}
 
 			// Font-specific: texture reference
@@ -847,11 +847,11 @@ export class ProjectWriter {
 
 			if (res.propertyType === 'MovieClipResource') {
 				const movieClipRes = res as WritableMovieClipResource;
+				if (movieClipRes.getSmoothing?.() === false)
+					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageMovieClipResource.attrs.smoothing, 'false');
 				const textureSetMode = movieClipRes.getTextureSetMode?.() ?? '';
 				if (textureSetMode)
 					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageMovieClipResource.attrs.atlas, textureSetMode);
-				if (movieClipRes.getSmoothing?.() === false)
-					writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.packageMovieClipResource.attrs.smoothing, 'false');
 			}
 
 			if (res.propertyType === 'SpineResource' || res.propertyType === 'DragonBonesResource') {

@@ -589,8 +589,8 @@ test('round-trip: sample list ptrRes and transition value attrs survive write→
 		const powerUpXml = await fs.readFile(path.join(tmpDir, 'assets', 'Transition', 'PowerUp.xml'), 'utf-8');
 		t.true(powerUpXml.includes('label2="end"'), 'transition end label is written');
 		t.true(
-			powerUpXml.includes('<item time="0" type="Alpha" value="1.00"/>'),
-			'non-tween alpha writes value attr with editor-style fixed decimals',
+			powerUpXml.includes('<item time="0" type="Alpha" value="1"/>'),
+			'non-tween alpha writes a whole value without trailing zeros',
 		);
 		t.true(
 			powerUpXml.includes('<item time="0" type="XY" value="0,0"/>'),

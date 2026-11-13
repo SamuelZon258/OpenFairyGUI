@@ -1,5 +1,5 @@
 import { ProjectIOError } from './errors.js';
-import { GearType } from '../constants.js';
+import { GearType, type RelationDef } from '../constants.js';
 import type { GObject } from '../properties/g-object.js';
 import type { Gear } from '../properties/gear.js';
 import { PROJECT_XML_PROTOCOL, writeXmlAttr, type XmlNodeProtocol } from './project-xml-protocol.js';
@@ -254,27 +254,28 @@ export function writeDisplayObjectBehaviors(
 		attrs[gearTag] = [serializeGear(gear, obj.propertyType, obj.getName())];
 	}
 
-	// Relation child elements
 	const relationChildName = getProtocolChildName(protocol, 'relation');
-	const relations = obj.getRelations();
-	if (relations.length > 0) {
-		// Group by target
-		const byTarget = new Map<string, string[]>();
-		for (const rel of relations) {
-			const name = RELATION_TYPE_NAME[rel.type] ?? '';
-			if (!name) continue;
-			const pair = rel.usePercent ? name + '%' : name;
-			if (!byTarget.has(rel.target)) byTarget.set(rel.target, []);
-			byTarget.get(rel.target)!.push(pair);
-		}
-		const relElements = Array.from(byTarget.entries()).map(([target, pairs]) => {
-			const relationAttrs: Record<string, unknown> = {};
-			writeXmlAttr(relationAttrs, PROJECT_XML_PROTOCOL.relation.attrs.target, target);
-			writeXmlAttr(relationAttrs, PROJECT_XML_PROTOCOL.relation.attrs.sidePair, pairs.join(','));
-			return relationAttrs;
-		});
-		if (relElements.length > 0 && relationChildName) attrs[relationChildName] = relElements;
+	const relElements = serializeRelationElements(obj.getRelations());
+	if (relElements.length > 0 && relationChildName) attrs[relationChildName] = relElements;
+}
+
+/** Groups relations by target, matching the editor's sidePair attribute. */
+export function serializeRelationElements(relations: readonly RelationDef[]): Record<string, unknown>[] {
+	const byTarget = new Map<string, string[]>();
+	for (const rel of relations) {
+		const name = RELATION_TYPE_NAME[rel.type] ?? '';
+		if (!name) continue;
+		const pair = rel.usePercent ? `${name}%` : name;
+		const pairs = byTarget.get(rel.target);
+		if (pairs) pairs.push(pair);
+		else byTarget.set(rel.target, [pair]);
 	}
+	return Array.from(byTarget.entries()).map(([target, pairs]) => {
+		const relationAttrs: Record<string, unknown> = {};
+		writeXmlAttr(relationAttrs, PROJECT_XML_PROTOCOL.relation.attrs.target, target);
+		writeXmlAttr(relationAttrs, PROJECT_XML_PROTOCOL.relation.attrs.sidePair, pairs.join(','));
+		return relationAttrs;
+	});
 }
 
 export function assertDisplayObjectGearXmlValues(obj: GObject): void {
@@ -327,6 +328,7 @@ function serializeGear(gear: Gear, ownerType?: string, ownerName?: string | null
 			PROJECT_XML_PROTOCOL.gear.attrs.default,
 			normalizeGearXmlValue(gear.getGearType(), gear.getDefaultValue(), ownerType, ownerName ?? undefined, gear),
 		);
+	if (gear.getCondition()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.gear.attrs.condition, gear.getCondition());
 	if (gear.getTween()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.gear.attrs.tween, 'true');
 	if (gear.getEaseType() !== 5)
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.gear.attrs.ease, stringifyEaseType(gear.getEaseType()));
@@ -335,6 +337,5 @@ function serializeGear(gear: Gear, ownerType?: string, ownerName?: string | null
 	if (gear.getTweenDelay() !== 0)
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.gear.attrs.delay, String(gear.getTweenDelay()));
 	if (gear.getPositionsInPercent()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.gear.attrs.positionsInPercent, 'true');
-	if (gear.getCondition()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.gear.attrs.condition, gear.getCondition());
 	return attrs;
 }

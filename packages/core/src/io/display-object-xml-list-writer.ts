@@ -28,47 +28,6 @@ export function writeListXmlNode(attrs: Record<string, unknown>, object: GList |
 		};
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.layout, layoutName[layout] ?? 'row');
 	}
-	const lineGap = object.getLineGap() ?? 0;
-	if (lineGap !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineGap, String(lineGap));
-	const columnGap = object.getColumnGap() ?? 0;
-	if (columnGap !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.columnGap, String(columnGap));
-	const align = object.getAlign();
-	if (align !== undefined && align !== 0) {
-		const alignName: Record<number, string> = { 0: 'left', 1: 'center', 2: 'right' };
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.align, alignName[align] ?? 'left');
-	}
-	const vAlign = object.getVAlign();
-	if (vAlign !== undefined && vAlign !== 0) {
-		const vAlignName: Record<number, string> = { 0: 'top', 1: 'middle', 2: 'bottom' };
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.vAlign, vAlignName[vAlign] ?? 'top');
-	}
-	const lineCount = object.getLineCount() ?? 0;
-	const columnCount = object.getColumnCount() ?? 0;
-	if ((layout === 2 || layout === 4) && columnCount !== 0) {
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineItemCount, String(columnCount));
-	} else if (layout === 3 && lineCount !== 0) {
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineItemCount, String(lineCount));
-	}
-	if (layout === 4 && lineCount !== 0) {
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineItemCount2, String(lineCount));
-	}
-	const autoResizeItem = object.getAutoResizeItem() ?? true;
-	if (autoResizeItem !== getDefaultListAutoResizeItem(layout ?? 0)) {
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.autoResizeItem, String(autoResizeItem));
-	}
-	const childrenRenderOrder = object.getChildrenRenderOrder() ?? 0;
-	if (childrenRenderOrder !== 0) {
-		const renderOrderName: Record<number, string> = { 0: 'ascent', 1: 'descent', 2: 'arch' };
-		writeXmlAttr(
-			attrs,
-			PROJECT_XML_PROTOCOL.list.attrs.childrenRenderOrder,
-			renderOrderName[childrenRenderOrder] ?? 'ascent',
-		);
-		const apexIndex = object.getApexIndex() ?? 0;
-		if (childrenRenderOrder === 2 && apexIndex !== 0) {
-			writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.apexIndex, String(apexIndex));
-		}
-	}
 	const selectionMode = object.getSelectionMode();
 	if (selectionMode !== undefined && selectionMode !== 0) {
 		const selectionName: Record<number, string> = {
@@ -78,19 +37,6 @@ export function writeListXmlNode(attrs: Record<string, unknown>, object: GList |
 			3: 'none',
 		};
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.selectionMode, selectionName[selectionMode] ?? 'single');
-	}
-	const defaultItem = object.getDefaultItem();
-	if (defaultItem) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.defaultItem, defaultItem);
-	const selectionController = object.getSelectionController();
-	if (selectionController)
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.selectionController, selectionController);
-	if (isTree) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.treeView, 'true');
-	if (isTree) {
-		const indent = object.getIndent() ?? 0;
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.indent, String(indent));
-		const clickToExpand = object.getClickToExpand() ?? 0;
-		if (clickToExpand !== 0)
-			writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.clickToExpand, String(clickToExpand));
 	}
 	const overflow = object.getOverflow() ?? 0;
 	if (overflow !== 0) {
@@ -102,14 +48,17 @@ export function writeListXmlNode(attrs: Record<string, unknown>, object: GList |
 		const scrollTypeName: Record<number, string> = { 0: 'horizontal', 1: 'vertical', 2: 'both' };
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.scroll, scrollTypeName[scrollType] ?? 'vertical');
 	}
+	const scrollBarFlags = object.getScrollBarFlags() ?? 0;
+	if (scrollBarFlags !== 0)
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.scrollBarFlags, String(scrollBarFlags));
 	const scrollBarDisplay = object.getScrollBarDisplay() ?? 0;
 	if (overflow === 2 && scrollBarDisplay !== 0) {
 		const scrollBarName: Record<number, string> = { 0: 'default', 1: 'visible', 2: 'auto', 3: 'hidden' };
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.scrollBar, scrollBarName[scrollBarDisplay] ?? 'default');
 	}
-	const scrollBarFlags = object.getScrollBarFlags() ?? 0;
-	if (scrollBarFlags !== 0)
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.scrollBarFlags, String(scrollBarFlags));
+	const margin = object.getMargin();
+	if (hasNonZeroInsets(margin))
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.margin, formatInsets(margin!, 'list margin'));
 	const scrollBarMargin = object.getScrollBarMargin();
 	if (hasNonZeroInsets(scrollBarMargin)) {
 		writeXmlAttr(
@@ -126,9 +75,6 @@ export function writeListXmlNode(attrs: Record<string, unknown>, object: GList |
 	const footerRes = object.getFooterRes() ?? '';
 	if (headerRes || footerRes)
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.ptrRes, `${headerRes},${footerRes}`);
-	const margin = object.getMargin();
-	if (hasNonZeroInsets(margin))
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.margin, formatInsets(margin!, 'list margin'));
 	const clipSoftness = object.getClipSoftness();
 	if (clipSoftness && ((clipSoftness.x ?? 0) !== 0 || (clipSoftness.y ?? 0) !== 0)) {
 		writeXmlAttr(
@@ -137,14 +83,68 @@ export function writeListXmlNode(attrs: Record<string, unknown>, object: GList |
 			formatProjectInt32List([clipSoftness.x ?? 0, clipSoftness.y ?? 0], 'list clipSoftness'),
 		);
 	}
+	const lineGap = object.getLineGap() ?? 0;
+	if (lineGap !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineGap, String(lineGap));
+	const columnGap = object.getColumnGap() ?? 0;
+	if (columnGap !== 0) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.columnGap, String(columnGap));
+	const lineCount = object.getLineCount() ?? 0;
+	const columnCount = object.getColumnCount() ?? 0;
+	if ((layout === 2 || layout === 4) && columnCount !== 0) {
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineItemCount, String(columnCount));
+	} else if (layout === 3 && lineCount !== 0) {
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineItemCount, String(lineCount));
+	}
+	if (layout === 4 && lineCount !== 0) {
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.lineItemCount2, String(lineCount));
+	}
+	const defaultItem = object.getDefaultItem();
+	if (defaultItem) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.defaultItem, defaultItem);
+	const autoResizeItem = object.getAutoResizeItem() ?? true;
+	if (autoResizeItem !== getDefaultListAutoResizeItem(layout ?? 0)) {
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.autoResizeItem, String(autoResizeItem));
+	}
+	const align = object.getAlign();
+	if (align !== undefined && align !== 0) {
+		const alignName: Record<number, string> = { 0: 'left', 1: 'center', 2: 'right' };
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.align, alignName[align] ?? 'left');
+	}
+	const vAlign = object.getVAlign();
+	if (vAlign !== undefined && vAlign !== 0) {
+		const vAlignName: Record<number, string> = { 0: 'top', 1: 'middle', 2: 'bottom' };
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.vAlign, vAlignName[vAlign] ?? 'top');
+	}
+	const childrenRenderOrder = object.getChildrenRenderOrder() ?? 0;
+	if (childrenRenderOrder !== 0) {
+		const renderOrderName: Record<number, string> = { 0: 'ascent', 1: 'descent', 2: 'arch' };
+		writeXmlAttr(
+			attrs,
+			PROJECT_XML_PROTOCOL.list.attrs.childrenRenderOrder,
+			renderOrderName[childrenRenderOrder] ?? 'ascent',
+		);
+		const apexIndex = object.getApexIndex() ?? 0;
+		if (childrenRenderOrder === 2 && apexIndex !== 0) {
+			writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.apexIndex, String(apexIndex));
+		}
+	}
+	const selectionController = object.getSelectionController();
+	if (selectionController)
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.selectionController, selectionController);
+	if (object.getAutoClearItems() === true) {
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.autoClearItems, 'true');
+	}
 	if (object.getScrollItemToViewOnClick() === false) {
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.scrollItemToViewOnClick, 'false');
 	}
 	if (object.getFoldInvisibleItems() === true) {
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.foldInvisibleItems, 'true');
 	}
-	if (object.getAutoClearItems() === true) {
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.autoClearItems, 'true');
+	if (isTree) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.treeView, 'true');
+	if (isTree) {
+		const indent = object.getIndent() ?? 0;
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.indent, String(indent));
+		const clickToExpand = object.getClickToExpand() ?? 0;
+		if (clickToExpand !== 0)
+			writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.list.attrs.clickToExpand, String(clickToExpand));
 	}
 	const listItems = object.getListItems() ?? [];
 	const listItemChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.list, 'item');
@@ -161,14 +161,16 @@ function serializeListItemXmlNode(
 ): Record<string, unknown> {
 	const attrs: Record<string, unknown> = {};
 	const specs = PROJECT_XML_PROTOCOL.listItem.attrs;
+	if (item.url !== undefined && item.url !== null) writeXmlAttr(attrs, specs.url, item.url);
 	if (item.title !== undefined && item.title !== null) writeXmlAttr(attrs, specs.title, item.title);
 	if (item.icon !== undefined && item.icon !== null) writeXmlAttr(attrs, specs.icon, item.icon);
-	if (item.url !== undefined && item.url !== null) writeXmlAttr(attrs, specs.url, item.url);
 	if (item.name !== undefined && item.name !== null) writeXmlAttr(attrs, specs.name, item.name);
-	if (item.selectedTitle !== undefined && item.selectedTitle !== null)
-		writeXmlAttr(attrs, specs.selectedTitle, item.selectedTitle);
 	if (item.selectedIcon !== undefined && item.selectedIcon !== null)
 		writeXmlAttr(attrs, specs.selectedIcon, item.selectedIcon);
+	if (item.selectedTitle !== undefined && item.selectedTitle !== null)
+		writeXmlAttr(attrs, specs.selectedTitle, item.selectedTitle);
+	if (item.controllers !== undefined && item.controllers !== null)
+		writeXmlAttr(attrs, specs.controllers, item.controllers);
 	if (
 		item.level !== undefined &&
 		item.level !== null &&
@@ -179,8 +181,6 @@ function serializeListItemXmlNode(
 	if (item.isFolder !== undefined && item.isFolder !== null) {
 		writeXmlAttr(attrs, specs.isFolder, item.isFolder ? 'true' : 'false');
 	}
-	if (item.controllers !== undefined && item.controllers !== null)
-		writeXmlAttr(attrs, specs.controllers, item.controllers);
 	const propertyChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.listItem, 'property');
 	if (propertyChildName && item.propertyOverrides?.length) {
 		attrs[propertyChildName] = item.propertyOverrides.map(serializePropertyOverrideXmlNode);

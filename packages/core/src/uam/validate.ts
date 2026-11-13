@@ -870,6 +870,19 @@ export function validateUamProject(project: UamProject): UamValidationIssue[] {
 				childIds.add(child.id);
 				if (child.kind === 'group') groupIds.add(child.id);
 			}
+			if (!Array.isArray(component.relations)) {
+				pushIssue(issues, `${resourcePath}.component.relations`, 'Component relations must be an array.');
+			} else {
+				for (const [relationIndex, relation] of component.relations.entries()) {
+					if (relation.targetNodeId && !childIds.has(relation.targetNodeId)) {
+						pushIssue(
+							issues,
+							`${resourcePath}.component.relations[${relationIndex}]`,
+							`Unknown relation target node id "${describeValue(relation.targetNodeId)}".`,
+						);
+					}
+				}
+			}
 
 			const controllerMap = new Map<string, UamControllerModel>();
 			for (const [controllerIndex, controller] of component.controllers.entries()) {

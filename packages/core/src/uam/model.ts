@@ -189,6 +189,8 @@ export interface UamComponentModel {
 	displayList: UamDisplayNode[];
 	controllers: UamControllerModel[];
 	transitions: UamTransitionModel[];
+	/** Size links from this component to its own display nodes. */
+	relations: UamRelation[];
 }
 
 export interface UamComponentCustomProperty {

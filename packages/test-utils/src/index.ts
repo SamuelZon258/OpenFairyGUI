@@ -321,6 +321,7 @@ export function createMinimalUamProject(projectId: string): UamProject {
 							],
 							controllers: [],
 							transitions: [],
+							relations: [],
 						},
 					},
 				],

@@ -15,6 +15,7 @@ import {
 	getProtocolChildName,
 	hasNonZeroInsets,
 } from './project-xml-writer-utils.js';
+import { serializeRelationElements } from './display-object-xml-behaviors-writer.js';
 import { serializeDisplayList } from './display-object-xml-writer.js';
 import type { FileSystem } from './file-system.js';
 import { PROJECT_XML_PROTOCOL, writeXmlAttr } from './project-xml-protocol.js';
@@ -94,6 +95,7 @@ function formatTransitionValuePart(actionType: number, raw: string): string {
 	if (!Number.isFinite(numeric)) return raw;
 	switch (actionType) {
 		case TransitionActionType.Alpha:
+			return formatTrimmedFixed(numeric);
 		case TransitionActionType.ColorFilter:
 			return numeric.toFixed(2);
 		default:
@@ -199,24 +201,8 @@ export async function writeComponent(
 			PROJECT_XML_PROTOCOL.componentRoot.attrs.size,
 			formatProjectInt32List([w, h], 'component size'),
 		);
-	const [pivotX, pivotY] = [typedComp.getPivotX?.() ?? 0, typedComp.getPivotY?.() ?? 0];
-	if (pivotX !== 0 || pivotY !== 0 || typedComp.getPivotAsAnchor?.()) {
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.pivot, `${pivotX},${pivotY}`);
-		if (typedComp.getPivotAsAnchor?.())
-			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.anchor, 'true');
-	}
-	const overflow = typedComp.getOverflow?.() ?? 0;
-	if (overflow !== 0) {
-		const overflowName: Record<number, string> = { 0: 'visible', 1: 'hidden', 2: 'scroll' };
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.overflow, overflowName[overflow] ?? 'visible');
-	}
-	const margin = typedComp.getMargin?.();
-	if (hasNonZeroInsets(margin))
-		writeXmlAttr(
-			compAttrs,
-			PROJECT_XML_PROTOCOL.componentRoot.attrs.margin,
-			formatInsets(margin!, 'component margin'),
-		);
+	const idNum = typedComp.getIdNum?.() ?? 0;
+	if (idNum !== 0) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.idnum, String(idNum));
 	const restrictSize = [
 		typedComp.getMinWidth?.() ?? 0,
 		typedComp.getMaxWidth?.() ?? 0,
@@ -230,70 +216,19 @@ export async function writeComponent(
 			formatProjectInt32List(restrictSize, 'component restrictSize'),
 		);
 	}
-	if (typedComp.getBgColorEnabled?.())
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.bgColorEnabled, 'true');
-	const bgColor = typedComp.getBgColor?.();
-	if (bgColor) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.bgColor, bgColor);
-	const designImage = typedComp.getDesignImage?.();
-	if (designImage) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImage, designImage);
-	if (typedComp.getDesignImageForTest?.())
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageForTest, 'true');
-	const designImageAlpha = typedComp.getDesignImageAlpha?.() ?? 50;
-	if (designImageAlpha !== 50)
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageAlpha, String(designImageAlpha));
-	const designImageLayer = typedComp.getDesignImageLayer?.() ?? 0;
-	if (designImageLayer !== 0)
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageLayer, String(designImageLayer));
-	const designImageOffsetX = typedComp.getDesignImageOffsetX?.() ?? 0;
-	if (designImageOffsetX !== 0)
-		writeXmlAttr(
-			compAttrs,
-			PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageOffsetX,
-			formatProjectInt32(designImageOffsetX, 'designImageOffsetX'),
-		);
-	const designImageOffsetY = typedComp.getDesignImageOffsetY?.() ?? 0;
-	if (designImageOffsetY !== 0)
-		writeXmlAttr(
-			compAttrs,
-			PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageOffsetY,
-			formatProjectInt32(designImageOffsetY, 'designImageOffsetY'),
-		);
-	const idNum = typedComp.getIdNum?.() ?? 0;
-	if (idNum !== 0) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.idnum, String(idNum));
-	const initName = typedComp.getInitName?.();
-	if (initName) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.initName, initName);
-	const remark = typedComp.getRemark?.();
-	if (remark) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.remark, remark);
-	const customExtensionId = typedComp.getCustomExtensionId?.();
-	if (customExtensionId)
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.customExtention, customExtensionId);
-	const pageController = typedComp.getPageController?.();
-	if (pageController)
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.pageController, pageController);
-	const showSound = typedComp.getAddedToStageSound?.();
-	if (showSound) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.showSound, showSound);
-	const hideSound = typedComp.getRemovedFromStageSound?.();
-	if (hideSound) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.hideSound, hideSound);
-	const clipSoftness = typedComp.getClipSoftness?.();
-	if (clipSoftness && ((clipSoftness.x ?? 0) !== 0 || (clipSoftness.y ?? 0) !== 0)) {
-		writeXmlAttr(
-			compAttrs,
-			PROJECT_XML_PROTOCOL.componentRoot.attrs.clipSoftness,
-			formatProjectInt32List([clipSoftness.x ?? 0, clipSoftness.y ?? 0], 'component clipSoftness'),
-		);
+	const [pivotX, pivotY] = [typedComp.getPivotX?.() ?? 0, typedComp.getPivotY?.() ?? 0];
+	if (pivotX !== 0 || pivotY !== 0 || typedComp.getPivotAsAnchor?.()) {
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.pivot, `${pivotX},${pivotY}`);
+		if (typedComp.getPivotAsAnchor?.())
+			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.anchor, 'true');
+	}
+	const overflow = typedComp.getOverflow?.() ?? 0;
+	if (overflow !== 0) {
+		const overflowName: Record<number, string> = { 0: 'visible', 1: 'hidden', 2: 'scroll' };
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.overflow, overflowName[overflow] ?? 'visible');
 	}
 	if (typedComp.getOpaque?.() === false)
 		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.opaque, 'false');
-	const mask = typedComp.getMask?.();
-	if (mask) {
-		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.mask, mask);
-		if (typedComp.getReversedMask?.())
-			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.reversedMask, '1');
-	}
-	const hitTest = typedComp.getHitTest?.();
-	if (hitTest) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.hitTest, hitTest);
-	const customData = typedComp.getCustomData?.();
-	if (customData) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.customData, customData);
 	if (overflow === 2) {
 		const scrollTypeName: Record<number, string> = { 0: 'horizontal', 1: 'vertical', 2: 'both' };
 		const scrollBarName: Record<number, string> = { 0: 'default', 1: 'visible', 2: 'auto', 3: 'hidden' };
@@ -305,6 +240,9 @@ export async function writeComponent(
 				scrollTypeName[scrollType] ?? 'vertical',
 			);
 		}
+		const scrollBarFlags = typedComp.getScrollBarFlags?.() ?? 0;
+		if (scrollBarFlags !== 0)
+			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.scrollBarFlags, String(scrollBarFlags));
 		const scrollBarDisplay = typedComp.getScrollBarDisplay?.() ?? 0;
 		if (scrollBarDisplay !== 0) {
 			writeXmlAttr(
@@ -313,9 +251,15 @@ export async function writeComponent(
 				scrollBarName[scrollBarDisplay] ?? 'default',
 			);
 		}
-		const scrollBarFlags = typedComp.getScrollBarFlags?.() ?? 0;
-		if (scrollBarFlags !== 0)
-			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.scrollBarFlags, String(scrollBarFlags));
+	}
+	const margin = typedComp.getMargin?.();
+	if (hasNonZeroInsets(margin))
+		writeXmlAttr(
+			compAttrs,
+			PROJECT_XML_PROTOCOL.componentRoot.attrs.margin,
+			formatInsets(margin!, 'component margin'),
+		);
+	if (overflow === 2) {
 		const scrollBarMargin = typedComp.getScrollBarMargin?.();
 		if (hasNonZeroInsets(scrollBarMargin))
 			writeXmlAttr(
@@ -336,9 +280,68 @@ export async function writeComponent(
 		if (headerRes || footerRes)
 			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.ptrRes, `${headerRes},${footerRes}`);
 	}
-
+	const clipSoftness = typedComp.getClipSoftness?.();
+	if (clipSoftness && ((clipSoftness.x ?? 0) !== 0 || (clipSoftness.y ?? 0) !== 0)) {
+		writeXmlAttr(
+			compAttrs,
+			PROJECT_XML_PROTOCOL.componentRoot.attrs.clipSoftness,
+			formatProjectInt32List([clipSoftness.x ?? 0, clipSoftness.y ?? 0], 'component clipSoftness'),
+		);
+	}
 	const extType = typedComp.getExtensionType?.() ?? '';
 	if (extType) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.extention, extType);
+	const customExtensionId = typedComp.getCustomExtensionId?.();
+	if (customExtensionId)
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.customExtention, customExtensionId);
+	const mask = typedComp.getMask?.();
+	if (mask) {
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.mask, mask);
+		if (typedComp.getReversedMask?.())
+			writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.reversedMask, '1');
+	}
+	const hitTest = typedComp.getHitTest?.();
+	if (hitTest) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.hitTest, hitTest);
+	const initName = typedComp.getInitName?.();
+	if (initName) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.initName, initName);
+	const designImage = typedComp.getDesignImage?.();
+	if (designImage) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImage, designImage);
+	const designImageOffsetX = typedComp.getDesignImageOffsetX?.() ?? 0;
+	if (designImageOffsetX !== 0)
+		writeXmlAttr(
+			compAttrs,
+			PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageOffsetX,
+			formatProjectInt32(designImageOffsetX, 'designImageOffsetX'),
+		);
+	const designImageOffsetY = typedComp.getDesignImageOffsetY?.() ?? 0;
+	if (designImageOffsetY !== 0)
+		writeXmlAttr(
+			compAttrs,
+			PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageOffsetY,
+			formatProjectInt32(designImageOffsetY, 'designImageOffsetY'),
+		);
+	const designImageAlpha = typedComp.getDesignImageAlpha?.() ?? 50;
+	if (designImageAlpha !== 50)
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageAlpha, String(designImageAlpha));
+	const designImageLayer = typedComp.getDesignImageLayer?.() ?? 0;
+	if (designImageLayer !== 0)
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageLayer, String(designImageLayer));
+	if (typedComp.getDesignImageForTest?.())
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.designImageForTest, 'true');
+	if (typedComp.getBgColorEnabled?.())
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.bgColorEnabled, 'true');
+	const bgColor = typedComp.getBgColor?.();
+	if (bgColor) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.bgColor, bgColor);
+	const remark = typedComp.getRemark?.();
+	if (remark) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.remark, remark);
+	const customData = typedComp.getCustomData?.();
+	if (customData) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.customData, customData);
+	const pageController = typedComp.getPageController?.();
+	if (pageController)
+		writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.pageController, pageController);
+	const showSound = typedComp.getAddedToStageSound?.();
+	if (showSound) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.showSound, showSound);
+	const hideSound = typedComp.getRemovedFromStageSound?.();
+	if (hideSound) writeXmlAttr(compAttrs, PROJECT_XML_PROTOCOL.componentRoot.attrs.hideSound, hideSound);
 
 	const compNode: Record<string, unknown> = { ...compAttrs };
 
@@ -355,28 +358,6 @@ export async function writeComponent(
 	const children = comp.listChildren();
 	if (children.length > 0) {
 		compNode.displayList = serializeDisplayList(children);
-	}
-
-	// Transitions
-	const transitions = comp.listTransitions();
-	if (transitions.length > 0) {
-		const transitionChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.componentRoot, 'transition');
-		if (transitionChildName) {
-			compNode[transitionChildName] = transitions.map((t) => serializeTransition(t));
-		}
-	}
-
-	const customProperties = typedComp.getCustomProperties?.() ?? [];
-	const customPropertyChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.componentRoot, 'customProperty');
-	const customPropertyProtocol = PROJECT_XML_PROTOCOL.componentRoot.children!.customProperty!;
-	if (customProperties.length > 0 && customPropertyChildName) {
-		compNode[customPropertyChildName] = customProperties.map((property) => {
-			const attrs: Record<string, unknown> = {};
-			writeXmlAttr(attrs, customPropertyProtocol?.attrs.target, property.target);
-			writeXmlAttr(attrs, customPropertyProtocol?.attrs.propertyId, String(property.propertyId));
-			if (property.label) writeXmlAttr(attrs, customPropertyProtocol?.attrs.label, property.label);
-			return attrs;
-		});
 	}
 
 	if (extType) {
@@ -438,6 +419,33 @@ export async function writeComponent(
 		}
 	}
 
+	const relationChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.componentRoot, 'relation');
+	const relationElements = serializeRelationElements(comp.getRelations());
+	if (relationElements.length > 0 && relationChildName) compNode[relationChildName] = relationElements;
+
+	// Transitions
+	const transitions = comp.listTransitions();
+	if (transitions.length > 0) {
+		const transitionChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.componentRoot, 'transition');
+		if (transitionChildName) {
+			compNode[transitionChildName] = transitions.map((t) => serializeTransition(t));
+		}
+	}
+
+	const customProperties = typedComp.getCustomProperties?.() ?? [];
+	const customPropertyChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.componentRoot, 'customProperty');
+	const customPropertyProtocol = PROJECT_XML_PROTOCOL.componentRoot.children!.customProperty!;
+	if (customProperties.length > 0 && customPropertyChildName) {
+		compNode[customPropertyChildName] = customProperties.map((property) => {
+			const attrs: Record<string, unknown> = {};
+			writeXmlAttr(attrs, customPropertyProtocol?.attrs.target, property.target);
+			writeXmlAttr(attrs, customPropertyProtocol?.attrs.propertyId, String(property.propertyId));
+			if (property.label) writeXmlAttr(attrs, customPropertyProtocol?.attrs.label, property.label);
+			return attrs;
+		});
+	}
+
+
 	const xmlObj = {
 		'?xml': { '@_version': '1.0', '@_encoding': 'utf-8' },
 		component: compNode,
@@ -451,8 +459,6 @@ function serializeController(ctrl: Controller): Record<string, unknown> {
 	const pagesStr = pages.map((p) => `${p.getId()},${p.getName()}`).join(',');
 	const attrs: Record<string, unknown> = {};
 	writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.name, ctrl.getName());
-	writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.pages, pagesStr);
-	writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.selected, String(ctrl.getSelectedIndex()));
 	if (ctrl.getAlias()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.alias, ctrl.getAlias());
 	if (ctrl.getAutoRadioGroupDepth())
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.autoRadioGroupDepth, 'true');
@@ -463,6 +469,8 @@ function serializeController(ctrl: Controller): Record<string, unknown> {
 	if (ctrl.getHomePageType() === 'specific' || ctrl.getHomePageType() === 'variable') {
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.homePage, ctrl.getHomePage());
 	}
+	writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.pages, pagesStr);
+	writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.controller.attrs.selected, String(ctrl.getSelectedIndex()));
 	const remarkProtocol = PROJECT_XML_PROTOCOL.controller.children!.remark!;
 	const remarks = pages.flatMap((page, pageIndex) => {
 		if (!page.getRemark()) return [];
@@ -536,13 +544,13 @@ function serializeControllerAction(action: WritableControllerAction): Record<str
 function serializeTransition(trans: Transition): Record<string, unknown> {
 	const attrs: Record<string, unknown> = {};
 	writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.name, trans.getName());
+	if (trans.getOptions() !== 0)
+		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.options, String(trans.getOptions()));
 	if (trans.getAutoPlay()) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.autoPlay, 'true');
 	if (trans.getAutoPlayTimes() !== 1)
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.autoPlayTimes, String(trans.getAutoPlayTimes()));
 	if (trans.getAutoPlayDelay() !== 0)
 		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.autoPlayDelay, String(trans.getAutoPlayDelay()));
-	if (trans.getOptions() !== 0)
-		writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.options, String(trans.getOptions()));
 	if (trans.getFps() !== 24) writeXmlAttr(attrs, PROJECT_XML_PROTOCOL.transition.attrs.fps, String(trans.getFps()));
 
 	const ACTION_TYPE_NAMES: Record<number, string> = {
@@ -573,24 +581,8 @@ function serializeTransition(trans: Transition): Record<string, unknown> {
 			ACTION_TYPE_NAMES[item.getActionType()] ?? 'XY',
 		);
 		if (item.getTargetId()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.target, item.getTargetId());
-		if (item.getDuration() !== 0)
-			writeXmlAttr(
-				ia,
-				PROJECT_XML_PROTOCOL.transitionItem.attrs.duration,
-				formatTransitionFrameValue(item.getDuration()),
-			);
-		if (item.getTween()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.tween, 'true');
-		if (item.getTween() && item.getEaseType() !== 5)
-			writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.ease, stringifyEaseType(item.getEaseType()));
-		if (item.getRepeat() !== 0)
-			writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.repeat, String(item.getRepeat()));
-		if (item.getYoyo()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.yoyo, 'true');
 		if (item.getLabel()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.label, item.getLabel());
-		if (item.getEndLabel()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.label2, item.getEndLabel());
-		if (item.getPath()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.path, item.getPath());
-		if (item.getEaseType() === 31 && item.getCustomEasePath()) {
-			writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.customEase, item.getCustomEasePath());
-		}
+		if (item.getTween()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.tween, 'true');
 		const sv = item.getStartValue();
 		if (sv.length) {
 			if (!item.getTween())
@@ -613,6 +605,22 @@ function serializeTransition(trans: Transition): Record<string, unknown> {
 				PROJECT_XML_PROTOCOL.transitionItem.attrs.endValue,
 				stringifyTransitionValue(item.getActionType(), ev),
 			);
+		if (item.getDuration() !== 0)
+			writeXmlAttr(
+				ia,
+				PROJECT_XML_PROTOCOL.transitionItem.attrs.duration,
+				formatTransitionFrameValue(item.getDuration()),
+			);
+		if (item.getEndLabel()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.label2, item.getEndLabel());
+		if (item.getTween() && item.getEaseType() !== 5)
+			writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.ease, stringifyEaseType(item.getEaseType()));
+		if (item.getEaseType() === 31 && item.getCustomEasePath()) {
+			writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.customEase, item.getCustomEasePath());
+		}
+		if (item.getRepeat() !== 0)
+			writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.repeat, String(item.getRepeat()));
+		if (item.getYoyo()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.yoyo, 'true');
+		if (item.getPath()) writeXmlAttr(ia, PROJECT_XML_PROTOCOL.transitionItem.attrs.path, item.getPath());
 		return ia;
 	});
 

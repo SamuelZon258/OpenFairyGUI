@@ -27,7 +27,7 @@ This document defines the current alignment among these names so that the `displ
 |---|---|---|---|---|
 | Image | `image` | `image` | `image` | `image` |
 | Plain text | `text` | `text` | `text` | `text` |
-| Input text | `text` with `input="true"`, or explicit `inputtext` | `inputtext` | `inputtext` | `inputtext` |
+| Input text | `text` with `input="true"`, or explicit `inputtext` | `inputtext` | `inputtext` | `text` with `input="true"` |
 | Rich text | `richtext` | `richtext` | `richtext` | `richtext` |
 | Graph | `graph` | `graph` | `graph` | `graph` |
 | Group | `group` | `group` | `group` | `group` |
@@ -54,7 +54,7 @@ The following variants depend on additional conditions and cannot be determined 
 | Scenario | Written result |
 |---|---|
 | `GTextField` | `text` |
-| `GTextInput` | `inputtext` |
+| `GTextInput` | `text` plus `input="true"`; explicit `inputtext` is still accepted on read |
 | `GRichTextField` | `richtext` |
 | `GTree` | `list` with `treeView="true"` |
 | `GLoader3D` | `loader3d` |

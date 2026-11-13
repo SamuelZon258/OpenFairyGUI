@@ -9,6 +9,7 @@ import {
 	parseControllerPages,
 	parseFloat2,
 	parseInt2,
+	parseSidePair,
 	parseSizeString,
 	parseXML,
 	parseXMLPreserveOrder,
@@ -349,6 +350,22 @@ function getProtocolChildName(protocol: XmlNodeProtocol, childName: string): str
 	return protocol.children?.[childName] ? childName : null;
 }
 
+function readComponentRelations(comp: Component, compNode: ComponentXmlNode): void {
+	const relations = ensureArray(compNode.relation);
+	for (const relDef of relations) {
+		const parsedRelation = getXmlNode<Record<string, unknown>>(relDef);
+		if (!parsedRelation) continue;
+		const sidePair = readXmlAttr<string>(parsedRelation, PROJECT_XML_PROTOCOL.relation.attrs.sidePair) || '';
+		for (const pair of parseSidePair(sidePair)) {
+			comp.addRelation({
+				target: readXmlAttr<string>(parsedRelation, PROJECT_XML_PROTOCOL.relation.attrs.target) || '',
+				type: pair.type,
+				usePercent: pair.usePercent,
+			});
+		}
+	}
+}
+
 export function readComponentXml(ctx: ReaderContext, comp: Component, xmlContent: string): void {
 	const xml = parseXML(xmlContent);
 	const compNode = getXmlNode<ComponentXmlNode>(xml.component);
@@ -644,6 +661,8 @@ export function readComponentXml(ctx: ReaderContext, comp: Component, xmlContent
 			}
 		}
 	}
+
+	readComponentRelations(comp, compNode);
 
 	const customPropertyChildName = getProtocolChildName(PROJECT_XML_PROTOCOL.componentRoot, 'customProperty');
 	const customProperties = customPropertyChildName ? ensureArray(compNode[customPropertyChildName]) : [];

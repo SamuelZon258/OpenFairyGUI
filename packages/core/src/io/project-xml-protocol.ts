@@ -350,7 +350,7 @@ const TEXT_PANEL_ATTRS = {
 	underline: { canonical: 'underline' },
 	italic: { canonical: 'italic' },
 	bold: { canonical: 'bold' },
-	strikethrough: { canonical: 'strikethrough' },
+	strikethrough: { canonical: 'strike', aliases: ['strikethrough'] },
 	strokeColor: { canonical: 'strokeColor' },
 	strokeSize: { canonical: 'strokeSize' },
 	shadowColor: { canonical: 'shadowColor' },
@@ -878,6 +878,7 @@ const COMPONENT_ROOT_NODE = defineNode(
 	mergeChildren(
 		{
 			controller: CONTROLLER_NODE,
+			relation: RELATION_NODE,
 			transition: TRANSITION_NODE,
 			customProperty: CUSTOM_PROPERTY_NODE,
 		},

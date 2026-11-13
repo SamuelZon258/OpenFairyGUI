@@ -402,7 +402,7 @@ These attributes apply to every concrete display-list object. The tag-specific t
 | `underline` |  | Underline |
 | `italic` |  | Italic |
 | `bold` |  | Bold |
-| `strikethrough` |  | Strikethrough |
+| `strike` | `strikethrough` | Strikethrough |
 | `strokeColor` |  | Stroke color |
 | `strokeSize` |  | Stroke width |
 | `shadowColor` |  | Shadow color |
@@ -450,7 +450,7 @@ These attributes apply to every concrete display-list object. The tag-specific t
 | `underline` |  | Underline |
 | `italic` |  | Italic |
 | `bold` |  | Bold |
-| `strikethrough` |  | Strikethrough |
+| `strike` | `strikethrough` | Strikethrough |
 | `strokeColor` |  | Stroke color |
 | `strokeSize` |  | Stroke width |
 | `shadowColor` |  | Shadow color |
@@ -496,7 +496,7 @@ These attributes apply to every concrete display-list object. The tag-specific t
 | `underline` |  | Underline |
 | `italic` |  | Italic |
 | `bold` |  | Bold |
-| `strikethrough` |  | Strikethrough |
+| `strike` | `strikethrough` | Strikethrough |
 | `strokeColor` |  | Stroke color |
 | `strokeSize` |  | Stroke width |
 | `shadowColor` |  | Shadow color |

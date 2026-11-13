@@ -52,11 +52,11 @@ test('text XML preserves empty values, tag-specific attributes and Gear order', 
 		serializeDisplayList([plain, rich, input]),
 		'\n' +
 			[
-				'    <text id="t" name="plain" autoClearText="true" demoText="A&amp;B" vars="true" faceDilate="0.25" text="" leading="0" shadowColor="#abcdef" shadowOffset="0,0" xy="0,0" visible="false" touchable="false">',
+				'    <text id="t" name="plain" xy="0,0" visible="false" touchable="false" leading="0" vars="true" shadowColor="#abcdef" shadowOffset="0,0" faceDilate="0.25" autoClearText="true" demoText="A&amp;B" text="">',
 				'      <gearText default=""/>',
 				'    </text>',
-				'    <richtext id="r" name="rich" outlineSoftness="0.2" underlaySoftness="0.3" text="[b]&lt;&amp;&gt;[/b]" fontSize="12" ubb="true" xy="0,0"/>',
-				'    <inputtext id="i" name="input" text="0" fontSize="12" prompt="say &quot;hi&quot;" maxLength="5" restrict="0-9" password="true" keyboardType="2" xy="0,0"/>',
+				'    <richtext id="r" name="rich" xy="0,0" fontSize="12" ubb="true" outlineSoftness="0.2" underlaySoftness="0.3" text="[b]&lt;&amp;&gt;[/b]"/>',
+				'    <text id="i" name="input" xy="0,0" fontSize="12" text="0" input="true" prompt="say &quot;hi&quot;" maxLength="5" restrict="0-9" password="true" keyboardType="2"/>',
 			].join('\n') +
 			'\n  ',
 	);
@@ -155,7 +155,7 @@ test('instance XML keeps overrides before Gear and relations and extensions last
 		serializeDisplayList([combo]),
 		'\n' +
 			[
-				'    <component id="c" name="combo" src="source" controller="c,0" pageController="p" fileName="Combo.xml" pkg="pkg" xy="0,0">',
+				'    <component id="c" name="combo" src="source" fileName="Combo.xml" pkg="pkg" xy="0,0" controller="c,0" pageController="p">',
 				'      <property target="title" propertyId="0" value=""/>',
 				'      <property target="title" propertyId="0" value="0"/>',
 				'      <gearText default=""/>',
